@@ -14,7 +14,14 @@ class Memory():
         self.memory.append((state, action, reward, nextState, gameOver))
 
         if len(self.memory) > self.maxMemory:
-            self.memory.pop(0)
+            lowestReward = 1000000
+            lowestRewardIndex = 0
+            for i in range(len(self.memory)):
+                if self.memory[i][2] < lowestReward:
+                    lowestReward = self.memory[i][2]
+                    lowestRewardIndex = i
+
+            self.memory.pop(lowestRewardIndex)
 
 class Agent():
     def __init__(self, learningRate, gamma, batchSize=100):
