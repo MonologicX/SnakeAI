@@ -6,12 +6,12 @@ from game import *
 from model import Model, QTrainer
 
 class Memory():
-    def __init__(self, maxMemory=100):
+    def __init__(self, maxMemory=100000):
         self.memory = []
         self.maxMemory = maxMemory
 
     def append(self, state, action, reward, nextState, gameOver):
-        self.memory.append(state, action, reward, nextState, gameOver)
+        self.memory.append((state, action, reward, nextState, gameOver))
 
         if len(self.memory) > self.maxMemory:
             self.memory.pop(0)
@@ -23,7 +23,7 @@ class Agent():
         self.nGames = 0
         self.randomness = 0
         self.batchSize = batchSize
-        self.memory = deque(maxlen=100000)
+        self.memory = Memory()
         self.model = Model(8, 256, 4)
         self.trainer = QTrainer(self.model, self.learningRate, self.gamma)
         self.game = SnakeGame()
@@ -70,16 +70,16 @@ class Agent():
         return action
 
     def storeInMemory(self, state, action, reward, nextState, gameOver):
-        self.memory.append((state, action, reward, nextState, gameOver))
+        self.memory.append(state, action, reward, nextState, gameOver)
 
     def trainShort(self, state, action, reward, nextState, gameOver):
         self.trainer.trainStep(state, action, reward, nextState, gameOver)
 
     def trainLong(self):
-        if len(self.memory) < self.batchSize:
-            miniBatch = self.memory
+        if len(self.memory.memory) < self.batchSize:
+            miniBatch = self.memory.memory
         else:
-            miniBatch = random.sample(self.memory, self.batchSize)
+            miniBatch = random.sample(self.memory.memory, self.batchSize)
 
         for (state, action, reward, nextState, gameOver) in miniBatch:
             self.trainer.trainStep(state, action, reward, nextState, gameOver)
