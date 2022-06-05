@@ -1,7 +1,6 @@
 import torch
 import numpy
 import matplotlib.pyplot as plt
-from collections import deque
 from game import *
 from model import Model, QTrainer
 
@@ -14,14 +13,7 @@ class Memory():
         self.memory.append((state, action, reward, nextState, gameOver))
 
         if len(self.memory) > self.maxMemory:
-            lowestReward = 1000000
-            lowestRewardIndex = 0
-            for i in range(len(self.memory)):
-                if self.memory[i][2] < lowestReward:
-                    lowestReward = self.memory[i][2]
-                    lowestRewardIndex = i
-
-            self.memory.pop(lowestRewardIndex)
+            self.memory.pop(0)
 
 class Agent():
     def __init__(self, learningRate, gamma, batchSize=100):
@@ -37,8 +29,8 @@ class Agent():
 
     def getState(self):
 
-        snakeX = self.game.snake[0].x
-        snakeY = self.game.snake[0].y
+        headX = self.game.snake[0].x
+        headY = self.game.snake[0].y
         foodX = self.game.food.x
         foodY = self.game.food.y
 
@@ -61,7 +53,7 @@ class Agent():
             if self.game.isOutOfBounds(downSnake) or self.game.isCollision(downSnake, part):
                 dangerDown = 1
 
-        return [snakeX, snakeY, foodX, foodY, dangerLeft, dangerRight, dangerUp, dangerDown]
+        return [headX, headY, foodX, foodY, dangerLeft, dangerRight, dangerUp, dangerDown]
 
     def getAction(self, state):
         self.randomness = 90 - self.nGames
@@ -82,7 +74,7 @@ class Agent():
     def trainShort(self, state, action, reward, nextState, gameOver):
         self.trainer.trainStep(state, action, reward, nextState, gameOver)
 
-    def trainLong(self):
+    def trainBatch(self):
         if len(self.memory.memory) < self.batchSize:
             miniBatch = self.memory.memory
         else:
@@ -145,15 +137,15 @@ class Agent():
 
             newState = self.getState()
 
-            #self.trainShort(oldState, action, reward, newState, gameOver)
+            self.trainShort(oldState, action, reward, newState, gameOver)
             self.storeInMemory(oldState, action, reward, newState, gameOver)
 
-            self.trainLong()
+            self.trainBatch()
 
             rewards.append(reward)
 
             if self.game.gameOver == True:
-                self.trainLong()
+                self.trainBatch()
                 self.nGames += 1
                 print("Game: {0}, RewardSum: {1}".format(self.nGames, sum(rewards)))
                 rewards = []

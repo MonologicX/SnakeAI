@@ -4,7 +4,7 @@ import math
 import sys
 
 WINWIDTH, WINHEIGHT = (600, 600)
-FPS = 60
+FPS = 120
 
 #COLORS
 WHITE = (255, 255, 255)
@@ -192,6 +192,3 @@ class SnakeGame:
                     sys.exit()
 
             self.draw()
-
-#game = SnakeGame()
-#game.humanTest()
