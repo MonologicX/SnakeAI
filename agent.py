@@ -121,7 +121,6 @@ class Agent():
 
     def train(self):
 
-        self.record = 0
         scores = []
         totalScore = 0
         meanScores = []
